@@ -1,0 +1,47 @@
+apply plugin: 'java'
+apply plugin: 'war'
+
+sourceCompatibility = '1.8'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    capsule
+    capsuleMaven
+}
+
+dependencies {
+    providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
+    
+    capsule 'co.paralleluniverse:capsule:1.0'
+    capsuleMaven 'co.paralleluniverse:capsule-maven:1.0'
+}
+
+
+war {
+    from(configurations.capsule.collect { zipTree(it) })
+    from configurations.capsuleMaven
+
+    duplicatesStrategy 'exclude'
+    
+    
+    manifest { 
+        attributes(
+            'Main-Class'                : 'Capsule',
+            'Premain-Class'             : 'Capsule',
+            'Caplets'                   : 'co.paralleluniverse:capsule-maven:1.0',
+            'Application'               : 'org.eclipse.jetty:jetty-runner:9.3.3.v20150827',
+            'Allow-Snapshots'           : 'true',
+            'Min-Java-Version'          : '1.7.0',
+            'Args'                      : '$CAPSULE_JAR'
+        )
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.4'
+}
